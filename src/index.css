@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-serif: 'Instrument Serif', Georgia, serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    /* Proposed Academic & Credible Palette */
+    --color-ink-navy: #14233C;
+    --color-scholar-blue: #2B4C8C;
+    --color-laurel-gold: #B8913A;
+    --color-paper: #FAF8F4;
+    --color-stone: #E6E1D8;
+    --color-slate: #5A6478;
+    --color-ivy-green: #2F7A5A;
+    --color-brick: #B5473D;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #FAF8F4;
+    color: #14233C;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  .font-editorial, .font-serif {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+  }
+
+  /* Stop using developer monospace for numbers; use Inter with tabular figures */
+  .font-mono,
+  .tabular-nums {
+    font-family: var(--font-sans) !important;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Production Print / PDF Export Styles */
+@media print {
+  header,
+  footer,
+  .no-print,
+  button,
+  .sticky {
+    display: none !important;
+  }
+
+  body, html {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .shadow-xs, .shadow-sm, .shadow-md, .shadow-xl, .shadow-2xs {
+    box-shadow: none !important;
+  }
+
+  .border {
+    border-color: #cbd5e1 !important;
+  }
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+

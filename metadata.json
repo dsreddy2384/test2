@@ -1,0 +1,6 @@
+{
+  "name": "Pathfolio — 6th to College Activity & Milestone Journal",
+  "description": "A calm, private workspace for students and parents to log grades 6–12 activities, capture reflection essay seeds, and prepare Common App Top 10 descriptions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

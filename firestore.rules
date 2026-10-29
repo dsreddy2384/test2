@@ -1,0 +1,648 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() {
+      return request.resource.data;
+    }
+    function existing() {
+      return resource.data;
+    }
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // 3. Validation Blueprints
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+          'uid', 'displayName', 'currentGrade', 'gradYear',
+          'dreamColleges', 'streakDays', 'xp', 'lastCheckInDate',
+          'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'currentGrade', 'gradYear',
+          'dreamColleges', 'streakDays', 'xp', 'lastCheckInDate',
+          'createdAt', 'updatedAt'
+        ])
+        && data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.uid == request.auth.uid
+        && data.displayName is string && data.displayName.size() <= 80
+        && data.currentGrade is int && data.currentGrade >= 6 && data.currentGrade <= 12
+        && data.gradYear is int && data.gradYear >= 2025 && data.gradYear <= 2040
+        && data.dreamColleges is string && data.dreamColleges.size() <= 200
+        && data.streakDays is int && data.streakDays >= 0 && data.streakDays <= 5000
+        && data.xp is int && data.xp >= 0 && data.xp <= 1000000
+        && data.lastCheckInDate is string && data.lastCheckInDate.size() <= 20
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidFamilyProfile(data) {
+      return data.keys().hasAll([
+          'ownerId', 'studentFullName', 'preferredName', 'highSchoolName',
+          'highSchoolCityState', 'curriculumType', 'unweightedGpa', 'weightedGpa',
+          'classRank', 'satActScore', 'intendedMajors', 'careerInterests',
+          'householdStructure', 'firstGenerationCollege', 'languagesSpokenAtHome',
+          'feeWaiverEligible', 'parent1Name', 'parent1Relationship',
+          'parent1Education', 'parent1AlmaMater', 'parent1Occupation',
+          'parent2Name', 'parent2Relationship', 'parent2Education',
+          'parent2AlmaMater', 'parent2Occupation', 'siblingsCount',
+          'siblingsSummary', 'familyResponsibilitiesNotes', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'studentFullName', 'preferredName', 'highSchoolName',
+          'highSchoolCityState', 'curriculumType', 'unweightedGpa', 'weightedGpa',
+          'classRank', 'satActScore', 'intendedMajors', 'careerInterests',
+          'householdStructure', 'firstGenerationCollege', 'languagesSpokenAtHome',
+          'feeWaiverEligible', 'parent1Name', 'parent1Relationship',
+          'parent1Education', 'parent1AlmaMater', 'parent1Occupation',
+          'parent2Name', 'parent2Relationship', 'parent2Education',
+          'parent2AlmaMater', 'parent2Occupation', 'siblingsCount',
+          'siblingsSummary', 'familyResponsibilitiesNotes',
+          'homeZipCode', 'accountRole', 'studentEmail', 'parentEmail', 'parent2Email', 'familyShareCode', 'activeStudentId',
+          'createdAt', 'updatedAt'
+        ])
+        && data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.ownerId == request.auth.uid
+        && data.studentFullName is string && data.studentFullName.size() <= 100
+        && data.preferredName is string && data.preferredName.size() <= 60
+        && data.highSchoolName is string && data.highSchoolName.size() <= 120
+        && data.highSchoolCityState is string && data.highSchoolCityState.size() <= 100
+        && data.curriculumType is string && data.curriculumType.size() >= 1 && data.curriculumType.size() <= 40
+        && (
+          data.curriculumType == 'AP / Honors' ||
+          data.curriculumType == 'IB Diploma' ||
+          data.curriculumType == 'Dual Enrollment' ||
+          data.curriculumType == 'Standard College Prep' ||
+          data.curriculumType == 'Magnet / STEM'
+        )
+        && data.unweightedGpa is string && data.unweightedGpa.size() <= 20
+        && data.weightedGpa is string && data.weightedGpa.size() <= 20
+        && data.classRank is string && data.classRank.size() <= 40
+        && data.satActScore is string && data.satActScore.size() <= 60
+        && data.intendedMajors is string && data.intendedMajors.size() <= 160
+        && data.careerInterests is string && data.careerInterests.size() <= 160
+        && data.householdStructure is string && data.householdStructure.size() >= 1 && data.householdStructure.size() <= 40
+        && (
+          data.householdStructure == 'Both Parents' ||
+          data.householdStructure == 'Single Parent' ||
+          data.householdStructure == 'Blended Family' ||
+          data.householdStructure == 'Legal Guardian' ||
+          data.householdStructure == 'Other'
+        )
+        && data.firstGenerationCollege is bool
+        && data.languagesSpokenAtHome is string && data.languagesSpokenAtHome.size() <= 120
+        && data.feeWaiverEligible is bool
+        && data.parent1Name is string && data.parent1Name.size() <= 100
+        && data.parent1Relationship is string && data.parent1Relationship.size() >= 1 && data.parent1Relationship.size() <= 30
+        && (
+          data.parent1Relationship == 'Mother' ||
+          data.parent1Relationship == 'Father' ||
+          data.parent1Relationship == 'Stepmother' ||
+          data.parent1Relationship == 'Stepfather' ||
+          data.parent1Relationship == 'Legal Guardian' ||
+          data.parent1Relationship == 'Other'
+        )
+        && data.parent1Education is string && data.parent1Education.size() <= 60
+        && data.parent1AlmaMater is string && data.parent1AlmaMater.size() <= 120
+        && data.parent1Occupation is string && data.parent1Occupation.size() <= 120
+        && data.parent2Name is string && data.parent2Name.size() <= 100
+        && data.parent2Relationship is string && data.parent2Relationship.size() >= 1 && data.parent2Relationship.size() <= 30
+        && (
+          data.parent2Relationship == 'Father' ||
+          data.parent2Relationship == 'Mother' ||
+          data.parent2Relationship == 'Stepfather' ||
+          data.parent2Relationship == 'Stepmother' ||
+          data.parent2Relationship == 'Legal Guardian' ||
+          data.parent2Relationship == 'None / N/A' ||
+          data.parent2Relationship == 'Other'
+        )
+        && data.parent2Education is string && data.parent2Education.size() <= 60
+        && data.parent2AlmaMater is string && data.parent2AlmaMater.size() <= 120
+        && data.parent2Occupation is string && data.parent2Occupation.size() <= 120
+        && data.siblingsCount is int && data.siblingsCount >= 0 && data.siblingsCount <= 15
+        && data.siblingsSummary is string && data.siblingsSummary.size() <= 300
+        && data.familyResponsibilitiesNotes is string && data.familyResponsibilitiesNotes.size() <= 600
+        && (!('homeZipCode' in data) || (data.homeZipCode is string && data.homeZipCode.size() <= 20))
+        && (!('accountRole' in data) || (data.accountRole is string && data.accountRole.size() <= 30 && (data.accountRole == 'Student' || data.accountRole == 'Parent / Guardian')))
+        && (!('studentEmail' in data) || (data.studentEmail is string && data.studentEmail.size() <= 120))
+        && (!('parentEmail' in data) || (data.parentEmail is string && data.parentEmail.size() <= 120))
+        && (!('parent2Email' in data) || (data.parent2Email is string && data.parent2Email.size() <= 120))
+        && (!('familyShareCode' in data) || (data.familyShareCode is string && data.familyShareCode.size() <= 40))
+        && (!('activeStudentId' in data) || (data.activeStudentId is string && data.activeStudentId.size() <= 80))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStudentChild(data) {
+      return data.keys().hasAll([
+          'ownerId', 'id', 'name', 'grade', 'gradYear',
+          'schoolName', 'cityState', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'id', 'name', 'grade', 'gradYear',
+          'schoolName', 'cityState', 'studentEmail', 'curriculumType',
+          'unweightedGpa', 'weightedGpa', 'classRank', 'satActScore',
+          'intendedMajors', 'careerInterests', 'dreamColleges',
+          'isDeleted', 'deletedAt',
+          'createdAt', 'updatedAt'
+        ])
+        && data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.ownerId == request.auth.uid
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 80
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 80
+        && data.grade is int && data.grade >= 6 && data.grade <= 12
+        && data.gradYear is int && data.gradYear >= 2025 && data.gradYear <= 2040
+        && data.schoolName is string && data.schoolName.size() <= 120
+        && data.cityState is string && data.cityState.size() <= 100
+        && (!('studentEmail' in data) || (data.studentEmail is string && data.studentEmail.size() <= 120))
+        && (!('curriculumType' in data) || (data.curriculumType is string && data.curriculumType.size() <= 40))
+        && (!('unweightedGpa' in data) || (data.unweightedGpa is string && data.unweightedGpa.size() <= 20))
+        && (!('weightedGpa' in data) || (data.weightedGpa is string && data.weightedGpa.size() <= 20))
+        && (!('classRank' in data) || (data.classRank is string && data.classRank.size() <= 40))
+        && (!('satActScore' in data) || (data.satActScore is string && data.satActScore.size() <= 60))
+        && (!('intendedMajors' in data) || (data.intendedMajors is string && data.intendedMajors.size() <= 160))
+        && (!('careerInterests' in data) || (data.careerInterests is string && data.careerInterests.size() <= 160))
+        && (!('dreamColleges' in data) || (data.dreamColleges is string && data.dreamColleges.size() <= 200))
+        && (!('isDeleted' in data) || data.isDeleted is bool)
+        && (!('deletedAt' in data) || (data.deletedAt is string && data.deletedAt.size() <= 40))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidActivity(data) {
+      return data.keys().hasAll([
+          'ownerId', 'activityType', 'position', 'organization',
+          'description', 'extendedNotes', 'grades', 'timing',
+          'hoursPerWeek', 'weeksPerYear', 'continueInCollege',
+          'commonAppSlot', 'impactScore', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'activityType', 'position', 'organization',
+          'description', 'extendedNotes', 'grades', 'timing',
+          'hoursPerWeek', 'weeksPerYear', 'continueInCollege',
+          'commonAppSlot', 'impactScore', 'studentId', 'studentName',
+          'isDeleted', 'deletedAt',
+          'createdAt', 'updatedAt'
+        ])
+        && data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.ownerId == request.auth.uid
+        && data.activityType is string && data.activityType.size() >= 1 && data.activityType.size() <= 60
+        && data.position is string && data.position.size() >= 1 && data.position.size() <= 50
+        && data.organization is string && data.organization.size() >= 1 && data.organization.size() <= 100
+        && data.description is string && data.description.size() >= 1 && data.description.size() <= 150
+        && data.extendedNotes is string && data.extendedNotes.size() <= 2000
+        && data.grades is list && data.grades.size() >= 1 && data.grades.size() <= 7
+        && data.grades[0] is int && data.grades[0] >= 6 && data.grades[0] <= 12
+        && data.timing is string && data.timing.size() <= 20
+        && (data.timing == 'School Year' || data.timing == 'School Break' || data.timing == 'All Year')
+        && (data.hoursPerWeek is int || data.hoursPerWeek is float) && data.hoursPerWeek >= 0.5 && data.hoursPerWeek <= 80
+        && (data.weeksPerYear is int || data.weeksPerYear is float) && data.weeksPerYear >= 1 && data.weeksPerYear <= 52
+        && data.continueInCollege is bool
+        && data.commonAppSlot is int && data.commonAppSlot >= 0 && data.commonAppSlot <= 10
+        && data.impactScore is int && data.impactScore >= 1 && data.impactScore <= 5
+        && (!('studentId' in data) || (data.studentId is string && data.studentId.size() <= 80))
+        && (!('studentName' in data) || (data.studentName is string && data.studentName.size() <= 80))
+        && (!('isDeleted' in data) || data.isDeleted is bool)
+        && (!('deletedAt' in data) || (data.deletedAt is string && data.deletedAt.size() <= 40))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidJournalEntry(data) {
+      return data.keys().hasAll([
+          'ownerId', 'title', 'content', 'promptUsed', 'gradeLevel',
+          'linkedActivityId', 'linkedActivityTitle', 'mood',
+          'hoursLogged', 'isEssaySeed', 'entryDate', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'title', 'content', 'promptUsed', 'gradeLevel',
+          'linkedActivityId', 'linkedActivityTitle', 'mood',
+          'hoursLogged', 'isEssaySeed', 'entryDate', 'studentId', 'studentName',
+          'isDeleted', 'deletedAt',
+          'createdAt', 'updatedAt'
+        ])
+        && data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.ownerId == request.auth.uid
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 100
+        && data.content is string && data.content.size() >= 1 && data.content.size() <= 3000
+        && data.promptUsed is string && data.promptUsed.size() <= 160
+        && data.gradeLevel is int && data.gradeLevel >= 6 && data.gradeLevel <= 12
+        && data.linkedActivityId is string && data.linkedActivityId.size() <= 128
+        && data.linkedActivityTitle is string && data.linkedActivityTitle.size() <= 100
+        && data.mood is string && data.mood.size() <= 20
+        && (data.mood == 'Energized' || data.mood == 'Proud' || data.mood == 'Curious' || data.mood == 'Challenged' || data.mood == 'Grateful')
+        && (data.hoursLogged is int || data.hoursLogged is float) && data.hoursLogged >= 0 && data.hoursLogged <= 24
+        && data.isEssaySeed is bool
+        && data.entryDate is string && data.entryDate.size() >= 1 && data.entryDate.size() <= 20
+        && (!('studentId' in data) || (data.studentId is string && data.studentId.size() <= 80))
+        && (!('studentName' in data) || (data.studentName is string && data.studentName.size() <= 80))
+        && (!('isDeleted' in data) || data.isDeleted is bool)
+        && (!('deletedAt' in data) || (data.deletedAt is string && data.deletedAt.size() <= 40))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidHonorAward(data) {
+      return data.keys().hasAll([
+          'ownerId', 'title', 'gradeLevel', 'recognitionLevel',
+          'commonAppRank', 'notes', 'awardDate', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'title', 'gradeLevel', 'recognitionLevel',
+          'commonAppRank', 'notes', 'awardDate', 'studentId', 'studentName',
+          'isDeleted', 'deletedAt',
+          'createdAt', 'updatedAt'
+        ])
+        && data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.ownerId == request.auth.uid
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 100
+        && data.gradeLevel is int && data.gradeLevel >= 6 && data.gradeLevel <= 12
+        && data.recognitionLevel is string && data.recognitionLevel.size() <= 30
+        && (data.recognitionLevel == 'School' || data.recognitionLevel == 'State/Regional' || data.recognitionLevel == 'National' || data.recognitionLevel == 'International')
+        && data.commonAppRank is int && data.commonAppRank >= 0 && data.commonAppRank <= 5
+        && data.notes is string && data.notes.size() <= 500
+        && data.awardDate is string && data.awardDate.size() >= 1 && data.awardDate.size() <= 20
+        && (!('studentId' in data) || (data.studentId is string && data.studentId.size() <= 80))
+        && (!('studentName' in data) || (data.studentName is string && data.studentName.size() <= 80))
+        && (!('isDeleted' in data) || data.isDeleted is bool)
+        && (!('deletedAt' in data) || (data.deletedAt is string && data.deletedAt.size() <= 40))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidEssayDraft(data) {
+      return data.keys().hasAll([
+          'ownerId', 'versionTitle', 'promptId', 'promptText',
+          'essayText', 'wordCount', 'overallScore', 'takeawaySummary',
+          'savedDate', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'versionTitle', 'promptId', 'promptText',
+          'essayText', 'wordCount', 'overallScore', 'takeawaySummary',
+          'savedDate', 'studentId', 'studentName', 'isDeleted', 'deletedAt',
+          'createdAt', 'updatedAt'
+        ])
+        && data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.ownerId == request.auth.uid
+        && data.versionTitle is string && data.versionTitle.size() >= 1 && data.versionTitle.size() <= 100
+        && data.promptId is string && data.promptId.size() >= 1 && data.promptId.size() <= 20
+        && data.promptText is string && data.promptText.size() >= 1 && data.promptText.size() <= 350
+        && data.essayText is string && data.essayText.size() >= 1 && data.essayText.size() <= 5000
+        && data.wordCount is int && data.wordCount >= 0 && data.wordCount <= 1000
+        && data.overallScore is int && data.overallScore >= 0 && data.overallScore <= 100
+        && data.takeawaySummary is string && data.takeawaySummary.size() <= 600
+        && data.savedDate is string && data.savedDate.size() >= 1 && data.savedDate.size() <= 25
+        && (!('studentId' in data) || (data.studentId is string && data.studentId.size() <= 80))
+        && (!('studentName' in data) || (data.studentName is string && data.studentName.size() <= 80))
+        && (!('isDeleted' in data) || data.isDeleted is bool)
+        && (!('deletedAt' in data) || (data.deletedAt is string && data.deletedAt.size() <= 40))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidCollegeDeadline(data) {
+      return data.keys().hasAll([
+          'ownerId', 'collegeName', 'category', 'appRound',
+          'deadlineDate', 'status', 'intendedMajor', 'supplementalStatus',
+          'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'collegeName', 'category', 'appRound',
+          'deadlineDate', 'status', 'intendedMajor', 'supplementalStatus',
+          'studentId', 'studentName', 'isDeleted', 'deletedAt',
+          'createdAt', 'updatedAt'
+        ])
+        && data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.ownerId == request.auth.uid
+        && data.collegeName is string && data.collegeName.size() >= 1 && data.collegeName.size() <= 100
+        && data.category is string && data.category.size() >= 1 && data.category.size() <= 20
+        && (data.category == 'Reach' || data.category == 'Target' || data.category == 'Safety')
+        && data.appRound is string && data.appRound.size() >= 1 && data.appRound.size() <= 30
+        && (
+          data.appRound == 'Early Action (EA)' ||
+          data.appRound == 'Early Decision (ED)' ||
+          data.appRound == 'Restrictive EA' ||
+          data.appRound == 'Regular Decision (RD)' ||
+          data.appRound == 'Rolling'
+        )
+        && data.deadlineDate is string && data.deadlineDate.size() >= 1 && data.deadlineDate.size() <= 20
+        && data.status is string && data.status.size() >= 1 && data.status.size() <= 30
+        && (
+          data.status == 'Researching' ||
+          data.status == 'Drafting Essays' ||
+          data.status == 'Ready to Submit' ||
+          data.status == 'Submitted'
+        )
+        && data.intendedMajor is string && data.intendedMajor.size() <= 100
+        && data.supplementalStatus is string && data.supplementalStatus.size() <= 250
+        && (!('studentId' in data) || (data.studentId is string && data.studentId.size() <= 80))
+        && (!('studentName' in data) || (data.studentName is string && data.studentName.size() <= 80))
+        && (!('isDeleted' in data) || data.isDeleted is bool)
+        && (!('deletedAt' in data) || (data.deletedAt is string && data.deletedAt.size() <= 40))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // 4. Collection Rules: /users/{userId}
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if false;
+      allow create: if isVerifiedUser()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUserProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser()
+        && isValidId(userId)
+        && isValidUserProfile(incoming())
+        && request.auth.uid == userId
+        && existing().uid == request.auth.uid
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Action: Update Profile Settings
+          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'currentGrade', 'gradYear', 'dreamColleges', 'updatedAt']) ||
+          // Action: Update Gamification XP & Streak
+          incoming().diff(existing()).affectedKeys().hasOnly(['streakDays', 'xp', 'lastCheckInDate', 'updatedAt']) ||
+          // Action: Full Profile Sync
+          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'currentGrade', 'gradYear', 'dreamColleges', 'streakDays', 'xp', 'lastCheckInDate', 'updatedAt'])
+        );
+      allow delete: if isVerifiedUser() && isValidId(userId) && request.auth.uid == userId;
+
+      // 4b. Subcollection Rules: /users/{userId}/familyProfile/{profileId} (PII & Household Split Collection)
+      match /familyProfile/{profileId} {
+        allow get: if isSignedIn()
+          && isValidId(userId)
+          && isValidId(profileId)
+          && request.auth.uid == userId
+          && existing().ownerId == request.auth.uid
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+        allow list: if false;
+        allow create: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(profileId)
+          && request.auth.uid == userId
+          && isValidFamilyProfile(incoming())
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+        allow update: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(profileId)
+          && isValidFamilyProfile(incoming())
+          && request.auth.uid == userId
+          && existing().ownerId == request.auth.uid
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid
+          && (
+            // Action: Update Academic & Family Profile Details
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'studentFullName', 'preferredName', 'highSchoolName',
+              'highSchoolCityState', 'curriculumType', 'unweightedGpa', 'weightedGpa',
+              'classRank', 'satActScore', 'intendedMajors', 'careerInterests',
+              'householdStructure', 'firstGenerationCollege', 'languagesSpokenAtHome',
+              'feeWaiverEligible', 'parent1Name', 'parent1Relationship',
+              'parent1Education', 'parent1AlmaMater', 'parent1Occupation',
+              'parent2Name', 'parent2Relationship', 'parent2Education',
+              'parent2AlmaMater', 'parent2Occupation', 'siblingsCount',
+              'siblingsSummary', 'familyResponsibilitiesNotes',
+              'homeZipCode', 'accountRole', 'studentEmail', 'parentEmail', 'parent2Email', 'familyShareCode', 'activeStudentId',
+              'updatedAt'
+            ])
+          );
+        allow delete: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(profileId)
+          && request.auth.uid == userId
+          && existing().ownerId == request.auth.uid;
+      }
+
+      // 4c. Subcollection Rules: /users/{userId}/students/{studentId} (Per-Child Profiles in Multi-Child Families)
+      match /students/{studentId} {
+        allow get: if isSignedIn()
+          && isValidId(userId)
+          && isValidId(studentId)
+          && request.auth.uid == userId
+          && existing().ownerId == request.auth.uid;
+        allow list: if isSignedIn()
+          && isValidId(userId)
+          && request.auth.uid == userId;
+        allow create: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(studentId)
+          && request.auth.uid == userId
+          && isValidStudentChild(incoming())
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(studentId)
+          && isValidStudentChild(incoming())
+          && request.auth.uid == userId
+          && existing().ownerId == request.auth.uid
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && (
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'id', 'name', 'grade', 'gradYear', 'schoolName', 'cityState',
+              'studentEmail', 'curriculumType', 'unweightedGpa', 'weightedGpa',
+              'classRank', 'satActScore', 'intendedMajors', 'careerInterests',
+              'dreamColleges', 'isDeleted', 'deletedAt', 'updatedAt'
+            ])
+          );
+        allow delete: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(studentId)
+          && request.auth.uid == userId
+          && existing().ownerId == request.auth.uid;
+      }
+    }
+
+    // 5. Collection Rules: /activities/{activityId}
+    match /activities/{activityId} {
+      allow get: if isSignedIn() && isValidId(activityId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedUser()
+        && isValidId(activityId)
+        && isValidActivity(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser()
+        && isValidId(activityId)
+        && isValidActivity(incoming())
+        && existing().ownerId == request.auth.uid
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (
+          // Action: Reorder or Toggle Common App Slot
+          incoming().diff(existing()).affectedKeys().hasOnly(['commonAppSlot', 'impactScore', 'updatedAt']) ||
+          // Action: Soft Delete or Restore Activity (30-Day Trash)
+          incoming().diff(existing()).affectedKeys().hasOnly(['isDeleted', 'deletedAt', 'commonAppSlot', 'updatedAt']) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['isDeleted', 'deletedAt', 'updatedAt']) ||
+          // Action: Update Impact Score or Reflection Notes Inline
+          incoming().diff(existing()).affectedKeys().hasOnly(['impactScore', 'extendedNotes', 'updatedAt']) ||
+          // Action: Update Description from AI Admissions Coach
+          incoming().diff(existing()).affectedKeys().hasOnly(['description', 'updatedAt']) ||
+          // Action: Edit Activity Details
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'activityType', 'position', 'organization', 'description',
+            'extendedNotes', 'grades', 'timing', 'hoursPerWeek',
+            'weeksPerYear', 'continueInCollege', 'commonAppSlot',
+            'impactScore', 'studentId', 'studentName', 'isDeleted', 'deletedAt', 'updatedAt'
+          ])
+        );
+      allow delete: if isVerifiedUser() && isValidId(activityId) && existing().ownerId == request.auth.uid;
+    }
+
+    // 6. Collection Rules: /journals/{journalId}
+    match /journals/{journalId} {
+      allow get: if isSignedIn() && isValidId(journalId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedUser()
+        && isValidId(journalId)
+        && isValidJournalEntry(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser()
+        && isValidId(journalId)
+        && isValidJournalEntry(incoming())
+        && existing().ownerId == request.auth.uid
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (
+          // Action: Toggle Essay Seed Bookmark
+          incoming().diff(existing()).affectedKeys().hasOnly(['isEssaySeed', 'updatedAt']) ||
+          // Action: Soft Delete or Restore Journal Entry (30-Day Trash)
+          incoming().diff(existing()).affectedKeys().hasOnly(['isDeleted', 'deletedAt', 'updatedAt']) ||
+          // Action: Edit Full Journal Entry
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'content', 'promptUsed', 'gradeLevel',
+            'linkedActivityId', 'linkedActivityTitle', 'mood',
+            'hoursLogged', 'isEssaySeed', 'entryDate', 'studentId', 'studentName', 'isDeleted', 'deletedAt', 'updatedAt'
+          ])
+        );
+      allow delete: if isVerifiedUser() && isValidId(journalId) && existing().ownerId == request.auth.uid;
+    }
+
+    // 7. Collection Rules: /honors/{honorId}
+    match /honors/{honorId} {
+      allow get: if isSignedIn() && isValidId(honorId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedUser()
+        && isValidId(honorId)
+        && isValidHonorAward(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser()
+        && isValidId(honorId)
+        && isValidHonorAward(incoming())
+        && existing().ownerId == request.auth.uid
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (
+          // Action: Update Common App Honor Rank
+          incoming().diff(existing()).affectedKeys().hasOnly(['commonAppRank', 'updatedAt']) ||
+          // Action: Soft Delete or Restore Honor (30-Day Trash)
+          incoming().diff(existing()).affectedKeys().hasOnly(['isDeleted', 'deletedAt', 'commonAppRank', 'updatedAt']) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['isDeleted', 'deletedAt', 'updatedAt']) ||
+          // Action: Edit Honor Details
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'gradeLevel', 'recognitionLevel',
+            'commonAppRank', 'notes', 'awardDate', 'studentId', 'studentName', 'isDeleted', 'deletedAt', 'updatedAt'
+          ])
+        );
+      allow delete: if isVerifiedUser() && isValidId(honorId) && existing().ownerId == request.auth.uid;
+    }
+
+    // 8. Collection Rules: /essayDrafts/{draftId}
+    match /essayDrafts/{draftId} {
+      allow get: if isSignedIn() && isValidId(draftId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedUser()
+        && isValidId(draftId)
+        && isValidEssayDraft(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser()
+        && isValidId(draftId)
+        && isValidEssayDraft(incoming())
+        && existing().ownerId == request.auth.uid
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (
+          // Action: Soft Delete or Restore Essay Draft (30-Day Trash)
+          incoming().diff(existing()).affectedKeys().hasOnly(['isDeleted', 'deletedAt', 'updatedAt']) ||
+          // Action: Update Essay Draft Content & AI Score
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'versionTitle', 'promptId', 'promptText', 'essayText',
+            'wordCount', 'overallScore', 'takeawaySummary', 'savedDate',
+            'studentId', 'studentName', 'isDeleted', 'deletedAt', 'updatedAt'
+          ])
+        );
+      allow delete: if isVerifiedUser() && isValidId(draftId) && existing().ownerId == request.auth.uid;
+    }
+
+    // 9. Collection Rules: /collegeDeadlines/{collegeId}
+    match /collegeDeadlines/{collegeId} {
+      allow get: if isSignedIn() && isValidId(collegeId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isVerifiedUser()
+        && isValidId(collegeId)
+        && isValidCollegeDeadline(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isVerifiedUser()
+        && isValidId(collegeId)
+        && isValidCollegeDeadline(incoming())
+        && existing().ownerId == request.auth.uid
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (
+          // Action: Quick Status Update
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) ||
+          // Action: Soft Delete or Restore College Deadline (30-Day Trash)
+          incoming().diff(existing()).affectedKeys().hasOnly(['isDeleted', 'deletedAt', 'updatedAt']) ||
+          // Action: Edit College Deadline Details
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'collegeName', 'category', 'appRound', 'deadlineDate',
+            'status', 'intendedMajor', 'supplementalStatus',
+            'studentId', 'studentName', 'isDeleted', 'deletedAt', 'updatedAt'
+          ])
+        );
+      allow delete: if isVerifiedUser() && isValidId(collegeId) && existing().ownerId == request.auth.uid;
+    }
+  }
+}

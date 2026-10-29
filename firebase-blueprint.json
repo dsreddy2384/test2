@@ -1,0 +1,997 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Student profile storing current grade level, graduation year, gamified XP, and journal streak metrics.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Immutable Firebase Auth UID of the student owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Student display name.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "currentGrade": {
+          "type": "integer",
+          "description": "Current school grade from 6 to 12."
+        },
+        "gradYear": {
+          "type": "integer",
+          "description": "High school graduation year (e.g., 2026 to 2035)."
+        },
+        "dreamColleges": {
+          "type": "string",
+          "description": "Comma-separated target colleges or goals.",
+          "minLength": 0,
+          "maxLength": 200
+        },
+        "streakDays": {
+          "type": "integer",
+          "description": "Consecutive days of reflection journaling."
+        },
+        "xp": {
+          "type": "integer",
+          "description": "Total gamified experience points earned from logging activities, reflections, and honors."
+        },
+        "lastCheckInDate": {
+          "type": "string",
+          "description": "ISO date string (YYYY-MM-DD) of most recent journal check-in.",
+          "minLength": 0,
+          "maxLength": 20
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the profile was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the profile was last updated."
+        }
+      },
+      "required": [
+        "uid",
+        "displayName",
+        "currentGrade",
+        "gradYear",
+        "dreamColleges",
+        "streakDays",
+        "xp",
+        "lastCheckInDate",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "FamilyProfile": {
+      "title": "FamilyProfile",
+      "description": "Isolated student academic and family household profile for Common App Education and Family sections.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Immutable Firebase Auth UID of the student owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "studentFullName": {
+          "type": "string",
+          "description": "Legal full name for Common App Profile.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "preferredName": {
+          "type": "string",
+          "description": "Preferred first name or nickname.",
+          "minLength": 0,
+          "maxLength": 60
+        },
+        "highSchoolName": {
+          "type": "string",
+          "description": "Current school name.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "highSchoolCityState": {
+          "type": "string",
+          "description": "School city and state.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "curriculumType": {
+          "type": "string",
+          "description": "Academic curriculum track.",
+          "enum": ["AP / Honors", "IB Diploma", "Dual Enrollment", "Standard College Prep", "Magnet / STEM"],
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "unweightedGpa": {
+          "type": "string",
+          "description": "Unweighted GPA string (e.g., 3.94 / 4.0).",
+          "minLength": 0,
+          "maxLength": 20
+        },
+        "weightedGpa": {
+          "type": "string",
+          "description": "Weighted GPA string (e.g., 4.38 / 5.0).",
+          "minLength": 0,
+          "maxLength": 20
+        },
+        "classRank": {
+          "type": "string",
+          "description": "Class rank or percentile.",
+          "minLength": 0,
+          "maxLength": 40
+        },
+        "satActScore": {
+          "type": "string",
+          "description": "SAT/ACT/PSAT test score summary.",
+          "minLength": 0,
+          "maxLength": 60
+        },
+        "intendedMajors": {
+          "type": "string",
+          "description": "Intended college majors.",
+          "minLength": 0,
+          "maxLength": 160
+        },
+        "careerInterests": {
+          "type": "string",
+          "description": "Career interests and goals.",
+          "minLength": 0,
+          "maxLength": 160
+        },
+        "householdStructure": {
+          "type": "string",
+          "description": "Common App household marital/living structure.",
+          "enum": ["Both Parents", "Single Parent", "Blended Family", "Legal Guardian", "Other"],
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "firstGenerationCollege": {
+          "type": "boolean",
+          "description": "Whether student will be first-generation four-year college attendee."
+        },
+        "languagesSpokenAtHome": {
+          "type": "string",
+          "description": "Languages spoken at home.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "feeWaiverEligible": {
+          "type": "boolean",
+          "description": "Common App fee waiver eligibility indicator."
+        },
+        "parent1Name": {
+          "type": "string",
+          "description": "Parent/Guardian 1 full name.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "parent1Relationship": {
+          "type": "string",
+          "description": "Parent/Guardian 1 relationship.",
+          "enum": ["Mother", "Father", "Stepmother", "Stepfather", "Legal Guardian", "Other"],
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "parent1Education": {
+          "type": "string",
+          "description": "Parent/Guardian 1 highest education level.",
+          "minLength": 0,
+          "maxLength": 60
+        },
+        "parent1AlmaMater": {
+          "type": "string",
+          "description": "Parent/Guardian 1 college/university and degree year.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "parent1Occupation": {
+          "type": "string",
+          "description": "Parent/Guardian 1 job title and employer.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "parent2Name": {
+          "type": "string",
+          "description": "Parent/Guardian 2 full name.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "parent2Relationship": {
+          "type": "string",
+          "description": "Parent/Guardian 2 relationship.",
+          "enum": ["Father", "Mother", "Stepfather", "Stepmother", "Legal Guardian", "None / N/A", "Other"],
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "parent2Education": {
+          "type": "string",
+          "description": "Parent/Guardian 2 highest education level.",
+          "minLength": 0,
+          "maxLength": 60
+        },
+        "parent2AlmaMater": {
+          "type": "string",
+          "description": "Parent/Guardian 2 college/university and degree year.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "parent2Occupation": {
+          "type": "string",
+          "description": "Parent/Guardian 2 job title and employer.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "siblingsCount": {
+          "type": "integer",
+          "description": "Number of siblings (0 to 15)."
+        },
+        "siblingsSummary": {
+          "type": "string",
+          "description": "Names, ages/grades, and colleges of siblings for Common App Family section.",
+          "minLength": 0,
+          "maxLength": 300
+        },
+        "familyResponsibilitiesNotes": {
+          "type": "string",
+          "description": "Household responsibilities, caregiving, or family context for Common App.",
+          "minLength": 0,
+          "maxLength": 600
+        },
+        "homeZipCode": {
+          "type": "string",
+          "description": "Default 5-digit home/school ZIP code used to identify local school and district activities by default.",
+          "minLength": 0,
+          "maxLength": 20
+        },
+        "accountRole": {
+          "type": "string",
+          "description": "Role of the user who registered this login (Student or Parent / Guardian).",
+          "enum": ["Student", "Parent / Guardian"],
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "studentEmail": {
+          "type": "string",
+          "description": "Student Google email address for shared family portfolio access.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "parentEmail": {
+          "type": "string",
+          "description": "Parent or guardian Google email address for shared family portfolio access.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "parent2Email": {
+          "type": "string",
+          "description": "Second parent or co-parent Google email address for shared family portfolio access.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "familyShareCode": {
+          "type": "string",
+          "description": "Shared family link code connecting student and parent logins to the same portfolio.",
+          "minLength": 0,
+          "maxLength": 40
+        },
+        "activeStudentId": {
+          "type": "string",
+          "description": "Currently selected student ID in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "ownerId",
+        "studentFullName",
+        "preferredName",
+        "highSchoolName",
+        "highSchoolCityState",
+        "curriculumType",
+        "unweightedGpa",
+        "weightedGpa",
+        "classRank",
+        "satActScore",
+        "intendedMajors",
+        "careerInterests",
+        "householdStructure",
+        "firstGenerationCollege",
+        "languagesSpokenAtHome",
+        "feeWaiverEligible",
+        "parent1Name",
+        "parent1Relationship",
+        "parent1Education",
+        "parent1AlmaMater",
+        "parent1Occupation",
+        "parent2Name",
+        "parent2Relationship",
+        "parent2Education",
+        "parent2AlmaMater",
+        "parent2Occupation",
+        "siblingsCount",
+        "siblingsSummary",
+        "familyResponsibilitiesNotes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Activity": {
+      "title": "Activity",
+      "description": "Longitudinal student activity from 6th to 12th grade formatted with exact Common App constraints, personal growth impactScore (1-5), and reflections.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the student who owns this activity.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "activityType": {
+          "type": "string",
+          "description": "Official Common App activity category.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "position": {
+          "type": "string",
+          "description": "Common App Position/Leadership description (strictly max 50 chars).",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "organization": {
+          "type": "string",
+          "description": "Common App Organization Name (strictly max 100 chars).",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "Common App Activity Description (strictly max 150 chars).",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "extendedNotes": {
+          "type": "string",
+          "description": "Personal reflection, growth story, and memories for this activity.",
+          "minLength": 0,
+          "maxLength": 2000
+        },
+        "grades": {
+          "type": "array",
+          "description": "List of grades participated (integers from 6 to 12, max 7 items)."
+        },
+        "timing": {
+          "type": "string",
+          "description": "Common App participation timing.",
+          "enum": ["School Year", "School Break", "All Year"],
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "hoursPerWeek": {
+          "type": "number",
+          "description": "Hours spent per week (0.5 to 80)."
+        },
+        "weeksPerYear": {
+          "type": "number",
+          "description": "Weeks spent per year (1 to 52)."
+        },
+        "continueInCollege": {
+          "type": "boolean",
+          "description": "Whether student intends to participate in a similar activity in college."
+        },
+        "commonAppSlot": {
+          "type": "integer",
+          "description": "Priority slot 1-10 for official Common App export (0 means unslotted)."
+        },
+        "impactScore": {
+          "type": "integer",
+          "description": "1-5 rating of how meaningful this activity was to the student's personal growth."
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Optional identifier of the student/child in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "studentName": {
+          "type": "string",
+          "description": "Optional display name of the student/child in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "ownerId",
+        "activityType",
+        "position",
+        "organization",
+        "description",
+        "extendedNotes",
+        "grades",
+        "timing",
+        "hoursPerWeek",
+        "weeksPerYear",
+        "continueInCollege",
+        "commonAppSlot",
+        "impactScore",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "JournalEntry": {
+      "title": "JournalEntry",
+      "description": "Daily or weekly reflection entry capturing growth, memories, and future college essay seeds.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the student author.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Headline of the journal milestone or reflection.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "content": {
+          "type": "string",
+          "description": "Journal reflection text.",
+          "minLength": 1,
+          "maxLength": 3000
+        },
+        "promptUsed": {
+          "type": "string",
+          "description": "Guided reflection prompt used for this entry.",
+          "minLength": 0,
+          "maxLength": 160
+        },
+        "gradeLevel": {
+          "type": "integer",
+          "description": "Grade level (6 to 12) when this memory occurred."
+        },
+        "linkedActivityId": {
+          "type": "string",
+          "description": "Optional ID of the linked Activity.",
+          "minLength": 0,
+          "maxLength": 128
+        },
+        "linkedActivityTitle": {
+          "type": "string",
+          "description": "Display label of the linked activity.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "mood": {
+          "type": "string",
+          "description": "Reflection mood tag.",
+          "enum": ["Energized", "Proud", "Curious", "Challenged", "Grateful"],
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "hoursLogged": {
+          "type": "number",
+          "description": "Hours logged during this session (0 to 24)."
+        },
+        "isEssaySeed": {
+          "type": "boolean",
+          "description": "Bookmarked as a Personal Statement / College Essay Story Seed."
+        },
+        "entryDate": {
+          "type": "string",
+          "description": "ISO date (YYYY-MM-DD) of the journal entry.",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Optional identifier of the student/child in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "studentName": {
+          "type": "string",
+          "description": "Optional display name of the student/child in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "ownerId",
+        "title",
+        "content",
+        "promptUsed",
+        "gradeLevel",
+        "linkedActivityId",
+        "linkedActivityTitle",
+        "mood",
+        "hoursLogged",
+        "isEssaySeed",
+        "entryDate",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "HonorAward": {
+      "title": "HonorAward",
+      "description": "Academic or extracurricular Honor/Award aligned with the Common App 5 Honors section.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the student owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Honor or award title (max 100 chars).",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "gradeLevel": {
+          "type": "integer",
+          "description": "Grade level (6 to 12) when received."
+        },
+        "recognitionLevel": {
+          "type": "string",
+          "description": "Common App level of recognition.",
+          "enum": ["School", "State/Regional", "National", "International"],
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "commonAppRank": {
+          "type": "integer",
+          "description": "Slot 1 to 5 for Common App Honors section (0 if unslotted)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Context about the award or selection criteria.",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "awardDate": {
+          "type": "string",
+          "description": "Date or season received.",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Optional identifier of the student/child in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "studentName": {
+          "type": "string",
+          "description": "Optional display name of the student/child in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "ownerId",
+        "title",
+        "gradeLevel",
+        "recognitionLevel",
+        "commonAppRank",
+        "notes",
+        "awardDate",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "EssayDraft": {
+      "title": "EssayDraft",
+      "description": "Saved college essay draft with AI critique score, prompt, and version label.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the student owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "versionTitle": {
+          "type": "string",
+          "description": "Title or version label of the essay draft (max 100 chars).",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "promptId": {
+          "type": "string",
+          "description": "Common App prompt identifier.",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "promptText": {
+          "type": "string",
+          "description": "Full text of the chosen Common App essay prompt.",
+          "minLength": 1,
+          "maxLength": 350
+        },
+        "essayText": {
+          "type": "string",
+          "description": "Essay draft body text.",
+          "minLength": 1,
+          "maxLength": 5000
+        },
+        "wordCount": {
+          "type": "integer",
+          "description": "Word count of the draft (0 to 1000)."
+        },
+        "overallScore": {
+          "type": "integer",
+          "description": "AI critique score (0 to 100)."
+        },
+        "takeawaySummary": {
+          "type": "string",
+          "description": "AI admissions officer takeaway summary.",
+          "minLength": 0,
+          "maxLength": 600
+        },
+        "savedDate": {
+          "type": "string",
+          "description": "ISO date when draft was saved.",
+          "minLength": 1,
+          "maxLength": 25
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Optional identifier of the student/child in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "studentName": {
+          "type": "string",
+          "description": "Optional display name of the student/child in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "ownerId",
+        "versionTitle",
+        "promptId",
+        "promptText",
+        "essayText",
+        "wordCount",
+        "overallScore",
+        "takeawaySummary",
+        "savedDate",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CollegeDeadline": {
+      "title": "CollegeDeadline",
+      "description": "Target college application deadline, category (Reach/Target/Safety), and submission status.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the student owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "collegeName": {
+          "type": "string",
+          "description": "University or college name.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "category": {
+          "type": "string",
+          "description": "School selectivity tier.",
+          "enum": ["Reach", "Target", "Safety"],
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "appRound": {
+          "type": "string",
+          "description": "Application round.",
+          "enum": ["Early Action (EA)", "Early Decision (ED)", "Restrictive EA", "Regular Decision (RD)", "Rolling"],
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "deadlineDate": {
+          "type": "string",
+          "description": "ISO date (YYYY-MM-DD) of the application deadline.",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "status": {
+          "type": "string",
+          "description": "Application progress status.",
+          "enum": ["Researching", "Drafting Essays", "Ready to Submit", "Submitted"],
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "intendedMajor": {
+          "type": "string",
+          "description": "Major applying for at this institution.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "supplementalStatus": {
+          "type": "string",
+          "description": "Notes on supplemental essays or requirements.",
+          "minLength": 0,
+          "maxLength": 250
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Optional identifier of the student/child in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "studentName": {
+          "type": "string",
+          "description": "Optional display name of the student/child in a multi-child family portfolio.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "ownerId",
+        "collegeName",
+        "category",
+        "appRound",
+        "deadlineDate",
+        "status",
+        "intendedMajor",
+        "supplementalStatus",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StudentChild": {
+      "title": "StudentChild",
+      "description": "Individual child academic, school, GPA, testing, and target college profile inside a multi-child family account.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the parent/family owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "id": {
+          "type": "string",
+          "description": "Unique student child ID.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the child.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "grade": {
+          "type": "integer",
+          "description": "Current grade level (6 to 12)."
+        },
+        "gradYear": {
+          "type": "integer",
+          "description": "High school graduation year (2025 to 2040)."
+        },
+        "schoolName": {
+          "type": "string",
+          "description": "Current middle or high school name.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "cityState": {
+          "type": "string",
+          "description": "School city and state.",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        "studentEmail": {
+          "type": "string",
+          "description": "Optional student email.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "curriculumType": {
+          "type": "string",
+          "description": "Academic curriculum track.",
+          "minLength": 0,
+          "maxLength": 40
+        },
+        "unweightedGpa": {
+          "type": "string",
+          "description": "Unweighted GPA for this child.",
+          "minLength": 0,
+          "maxLength": 20
+        },
+        "weightedGpa": {
+          "type": "string",
+          "description": "Weighted GPA for this child.",
+          "minLength": 0,
+          "maxLength": 20
+        },
+        "classRank": {
+          "type": "string",
+          "description": "Class rank for this child.",
+          "minLength": 0,
+          "maxLength": 40
+        },
+        "satActScore": {
+          "type": "string",
+          "description": "Testing score for this child.",
+          "minLength": 0,
+          "maxLength": 60
+        },
+        "intendedMajors": {
+          "type": "string",
+          "description": "Intended college majors for this child.",
+          "minLength": 0,
+          "maxLength": 160
+        },
+        "careerInterests": {
+          "type": "string",
+          "description": "Career interests for this child.",
+          "minLength": 0,
+          "maxLength": 160
+        },
+        "dreamColleges": {
+          "type": "string",
+          "description": "Comma-separated target colleges for this child.",
+          "minLength": 0,
+          "maxLength": 200
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "ownerId",
+        "id",
+        "name",
+        "grade",
+        "gradYear",
+        "schoolName",
+        "cityState",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Student profiles indexed by Firebase Auth UID."
+    },
+    "/users/{userId}/familyProfile/{profileId}": {
+      "schema": {
+        "$ref": "#/entities/FamilyProfile"
+      },
+      "description": "Isolated student academic and family household profile for Common App."
+    },
+    "/users/{userId}/students/{studentId}": {
+      "schema": {
+        "$ref": "#/entities/StudentChild"
+      },
+      "description": "Per-child academic, school, GPA, and college profiles in a multi-child family account."
+    },
+    "/activities/{activityId}": {
+      "schema": {
+        "$ref": "#/entities/Activity"
+      },
+      "description": "Student activities from 6th to 12th grade with Common App fields and impactScore."
+    },
+    "/journals/{journalId}": {
+      "schema": {
+        "$ref": "#/entities/JournalEntry"
+      },
+      "description": "Daily reflection journal entries and college essay seeds."
+    },
+    "/honors/{honorId}": {
+      "schema": {
+        "$ref": "#/entities/HonorAward"
+      },
+      "description": "Academic and extracurricular honors and awards."
+    },
+    "/essayDrafts/{draftId}": {
+      "schema": {
+        "$ref": "#/entities/EssayDraft"
+      },
+      "description": "Saved Common App essay versions and AI critique history."
+    },
+    "/collegeDeadlines/{collegeId}": {
+      "schema": {
+        "$ref": "#/entities/CollegeDeadline"
+      },
+      "description": "Target college list and application deadline tracker."
+    }
+  }
+}
